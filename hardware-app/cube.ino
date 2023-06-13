@@ -8,7 +8,7 @@
 #define SCLK_PIN          13
 #define MOSI_PIN          11
 #define DC_PIN            8
-#define CS_PIN            9
+#define CS_PIN            10
 #define RST_PIN           7
 
 // Color definitions
@@ -40,7 +40,11 @@
 #include <ReefwingAHRS.h>
 #include <Arduino_LSM9DS1.h>
 #include <ArduinoBLE.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1351.h>
+#include <SPI.h>
 #include "Cube_Screen.h"
+#include "Cube_Images.h"
 
 // LSM9DS1 IMU
 LSM9DS1 imu;
@@ -54,10 +58,10 @@ int degreesX = 0;
 int degreesY = 0;
 
 // Cube Screen - Software SPI
-// Cube_Screen cubeScreen = Cube_Screen(SCREEN_WIDTH, SCREEN_HEIGHT, CS_PIN, DC_PIN, MOSI_PIN, SCLK_PIN, RST_PIN);
+Cube_Screen cubeScreen = Cube_Screen(SCREEN_WIDTH, SCREEN_HEIGHT, CS_PIN, DC_PIN, MOSI_PIN, SCLK_PIN, RST_PIN);
 
 // Cube Screen - Hardware SPI
-Cube_Screen cubeScreen = Cube_Screen(SCREEN_WIDTH, SCREEN_HEIGHT, &SPI, CS_PIN, DC_PIN, RST_PIN, SCREEN_IS_ACTIVE);
+// Cube_Screen cubeScreen = Cube_Screen(SCREEN_WIDTH, SCREEN_HEIGHT, &SPI, CS_PIN, DC_PIN, RST_PIN);
 
 // Cube BLE
 // Bluetooth® Low Energy - AHRS Service
@@ -256,14 +260,13 @@ void updateAHRSValues() {
   ahrsHeadingChar.writeValue(angles.heading);
   ahrsFrequencyChar.writeValue(loopFrequency);
 
-  cubeScreen.resetCursor();
-
   // Display value on the Screen
-  cubeScreen.drawValue("ROLL: ", angles.roll, RED);
-  cubeScreen.drawValue("PITC: ", angles.pitch, GREEN);
-  cubeScreen.drawValue("YAW : ", angles.yaw, BLUE);
-  cubeScreen.drawValue("HEAD: ", angles.heading, YELLOW);
-  cubeScreen.drawValue("FREQ: ", loopFrequency, " Hz", WHITE);
+  // cubeScreen.resetCursor();
+  // cubeScreen.drawValue("ROLL: ", angles.roll, RED);
+  // cubeScreen.drawValue("PITC: ", angles.pitch, GREEN);
+  // cubeScreen.drawValue("YAW : ", angles.yaw, BLUE);
+  // cubeScreen.drawValue("HEAD: ", angles.heading, YELLOW);
+  // cubeScreen.drawValue("FREQ: ", loopFrequency, " Hz", WHITE);
 }
 
 void updateTilting() {
@@ -273,7 +276,7 @@ void updateTilting() {
     IMU.readAcceleration(x, y, z);
   }
 
-  cubeScreen.setColor(MAGENTA);
+  // cubeScreen.setColor(MAGENTA);
 
   // Define X position
   if (x > 0.1) {
@@ -281,15 +284,16 @@ void updateTilting() {
     degreesX = map(x, 0, 97, 0, 90);
     directional.writeValue('U');
     accXPos.writeValue(degreesX);
-    cubeScreen.drawValue("Tilting up ", degreesX, " deg", MAGENTA);
+    // cubeScreen.drawValue("Tilting up ", degreesX, " deg", MAGENTA);
+    cubeScreen.drawBitmap(0, 0, imageArrowUp, SCREEN_WIDTH, SCREEN_HEIGHT, BLUE);
   
   } else if(x < -0.1) {
     x = 100 * x;
     degreesX = map(x, 0, -100, 0, 90);
     directional.writeValue('D');
     accXPos.writeValue(degreesX);
-    cubeScreen.drawValue("Tilting down ", degreesX, " deg", MAGENTA);
-  
+    // cubeScreen.drawValue("Tilting down ", degreesX, " deg", MAGENTA);
+    cubeScreen.drawBitmap(0, 0, imageArrowDown, SCREEN_WIDTH, SCREEN_HEIGHT, YELLOW);
   }
 
   // Define Y position
@@ -298,14 +302,16 @@ void updateTilting() {
     degreesY = map(y, 0, 97, 0, 90);
     directional.writeValue('L');
     accYPos.writeValue(degreesY);
-    cubeScreen.drawValue("Tilting left ", degreesY, " deg", MAGENTA);
+    // cubeScreen.drawValue("Tilting left ", degreesY, " deg", MAGENTA);
+    cubeScreen.drawBitmap(0, 0, imageArrowLeft, SCREEN_WIDTH, SCREEN_HEIGHT, RED);
 
   } else if (y < -0.1) {
     y = 100 * y;
     degreesY = map(y, 0, -100, 0, -90);
     directional.writeValue('R');
-    cubeScreen.drawValue("Tilting right ", degreesY, " deg", MAGENTA);
     accYPos.writeValue(degreesY);
-  
+    // cubeScreen.drawValue("Tilting right ", degreesY, " deg", MAGENTA);
+    cubeScreen.drawBitmap(0, 0, imageArrowRight, SCREEN_WIDTH, SCREEN_HEIGHT, GREEN);
+
   }
 }

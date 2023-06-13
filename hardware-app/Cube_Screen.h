@@ -29,7 +29,7 @@ public:
     @param rst_pin the connected 'RESET' pin of the Screen.
     @param is_active defines if the Screen is active for use.
   */
-  Cube_Screen(uint16_t width, uint16_t height, int8_t cs_pin, int8_t dc_pin, int8_t mosi_pin, int8_t sclk_pin, int8_t rst_pin = -1, bool is_active = false);
+  Cube_Screen(uint16_t width, uint16_t height, int8_t cs_pin, int8_t dc_pin, int8_t mosi_pin, int8_t sclk_pin, int8_t rst_pin = -1, bool is_active = true);
 
   /**
     @brief Constructur using hardware SPI (reset optional).
@@ -41,7 +41,7 @@ public:
     @param rst_pin the connected 'RESET' pin of the Screen.
     @param is_active defines if the Screen is active for use.
   */
-  Cube_Screen(uint16_t width, uint16_t height, SPIClass *spi, int8_t cs_pin, int8_t dc_pin, int8_t rst_pin = -1, bool is_active = false);
+  Cube_Screen(uint16_t width, uint16_t height, SPIClass *spi, int8_t cs_pin, int8_t dc_pin, int8_t rst_pin = -1, bool is_active = true);
 
   /**
     @brief Set the current color to the given 'color',

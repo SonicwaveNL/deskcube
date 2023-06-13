@@ -8,8 +8,13 @@ import {
     Accordion,
     Button,
     ActionIcon,
+    Modal,
     Box,
+    TextInput,
+    Paper,
+    Badge,
 } from '@mantine/core';
+import { useForm } from '@mantine/form';
 import { 
     IconHexagonFilled,
     IconSettingsFilled,
@@ -17,39 +22,41 @@ import {
     IconHourglassFilled,
     IconAlertCircle,
     IconPlus,
-    IconRefresh
+    IconRefresh,
+    IconTrashFilled
 } from '@tabler/icons-react';
-import { Shell, AppNavbar, Playground, AppBase, DynamicTopbar } from '@/components/ui';
+import { notifications } from '@mantine/notifications';
 import { useRouter } from 'next/router';
+import { useDisclosure } from '@mantine/hooks';
+import { v4 as uuid } from 'uuid';
+import { Shell, AppNavbar, Playground, AppBase, DynamicTopbar } from '@/components/ui';
 import { getTimer, updateTimer } from '@/store';
 import { Timer, TimerItem } from '@/models';
 import { TimerCard } from '@/components/timer';
-import { v4 as uuid } from 'uuid';
+import dayjs from 'dayjs';
+import { useCubeDirection } from '@/context/cube-direction';
 
 export default function TimerDetailPage() {
 
+    const [current, setCurrent] = useState('');
+    const [isRunning, setRunning] = useState(false);
     const [details, setDetails] = useState<Timer>(); 
+    const [opened, { open, close }] = useDisclosure(false);
     const router = useRouter();
     const timerUuid = router.query.id;
-    let count = 0;
+
+    const form = useForm({
+        initialValues: {
+            name: ''
+        }
+    })
 
     useEffect(() => {
         onRefresh();
     }, [])
 
-    const onRefresh = () => {
-        if (typeof timerUuid === 'string') {
-            getTimer(timerUuid)
-            .then((data) => {
-                console.log(data);
-                setDetails(data as Timer);
-            })
-            .catch(console.error)
-        }
-    }
-
-    const addItem = () => {
-        const item = {uuid: uuid(), name: `Time Time #${count + 1}`}
+    const onSubmit = (name: string) => {
+        const item = {uuid: uuid(), name: name, moments: []}
 
         if (typeof timerUuid === 'string') {
             console.log('Trying to add item:', item);
@@ -65,7 +72,104 @@ export default function TimerDetailPage() {
             updateTimer(timerUuid, details as Timer)
             .then(() => onRefresh())
             .catch(console.error)
-            count++;
+         
+            notifications.show({
+                title: `Added '${name}'`,
+                message: `Added item '${name}' to the Timer!`,
+                color: 'green',
+                withBorder: true
+            })
+        }
+    }
+
+    const onRefresh = () => {
+        if (typeof timerUuid === 'string') {
+            getTimer(timerUuid)
+            .then((data) => {
+                console.log(data);
+                setDetails(data as Timer);
+            })
+            .catch(console.error)
+        }
+    }
+
+    const onDelete = (uuid: string, name: string) => {
+        if (typeof timerUuid === 'string') {   
+            if (typeof details !== 'undefined'){
+                details.timerItems = details.timerItems.filter(item => item.uuid !== uuid);
+                updateTimer(timerUuid, details as Timer)
+                .then(() => onRefresh())
+                .catch(console.error)
+    
+                notifications.show({
+                    title: `Deleted '${name}'`,
+                    message: `Deleted the '${name}' Timer!`,
+                    color: 'red',
+                    withBorder: true
+                })
+            }
+        }
+    }
+
+    const onStart = (name: string, item: TimerItem) => {
+        if(!isRunning){
+            if (typeof timerUuid === 'string') {
+                if (typeof details !== 'undefined'){
+
+                    var itemIndex = details.timerItems.findIndex(obj => obj.uuid == item.uuid);
+                    const momentUUID = uuid();
+                    const moment = {uuid: momentUUID, name: name, start: dayjs().toString(), end: ''}
+
+                    if (typeof item.moments !== 'undefined'){
+                        details.timerItems[itemIndex].moments.push(moment);
+                    } else {
+                        details.timerItems[itemIndex].moments = [moment];
+                    }
+                    
+                    updateTimer(timerUuid, details as Timer)
+                    .then(() => {
+                        onRefresh()
+                        setRunning(true);
+                        setCurrent(momentUUID);
+                        notifications.show({
+                            title: `Started Timer`,
+                            message: `Started timer for '${item.name}'`,
+                            color: 'green',
+                            withBorder: true
+                        })
+                    })
+                    .catch(console.error)
+                }
+            }
+        }
+    }
+
+    const onStop = (item: TimerItem) => {
+        if(isRunning && current.length > 0){
+            if (typeof timerUuid === 'string') {
+                if (typeof details !== 'undefined'){
+                    var itemIndex = details.timerItems.findIndex(obj => obj.uuid == item.uuid);
+                    var momentIndex = details.timerItems[itemIndex].moments.findIndex(obj => obj.uuid == current);
+
+                    console.log(details.timerItems[itemIndex].moments[momentIndex]);
+
+                    details.timerItems[itemIndex].moments[momentIndex].end = dayjs().toString();
+
+                    updateTimer(timerUuid, details as Timer)
+                    .then(() => {
+                        onRefresh()
+                        setRunning(false);
+                        setCurrent('');
+                        notifications.show({
+                            title: `Stopped Timer`,
+                            message: `Stopped timer '${details.timerItems[itemIndex].moments[momentIndex].name}'`,
+                            color: 'green',
+                            withBorder: true
+                        })
+                    })
+                    .catch(console.error)
+                }
+            }
         }
     }
 
@@ -83,6 +187,14 @@ export default function TimerDetailPage() {
                     </AppNavbar>
                     <AppBase>
                         <DynamicTopbar/>
+
+                        <Modal title='Add Work Moment' opened={opened} onClose={close}>
+                            <form onSubmit={form.onSubmit((values) => onSubmit(values.name))}>
+                                <TextInput mb={20} label='Name' placeholder='Name' {...form.getInputProps('name')}/>
+                                <Button type='submit'>Submit</Button>
+                            </form>
+                        </Modal>
+
                         <Playground>
                             <Group spacing='xs' mb={20}>
                                 <Text size='md' color='violet.5'>
@@ -99,7 +211,7 @@ export default function TimerDetailPage() {
                             }
 
                             <Button.Group>
-                                <Button variant='default' leftIcon={<IconPlus size='1.125rem' />} onClick={addItem}>Add</Button>
+                                <Button variant='default' leftIcon={<IconPlus size='1.125rem' />} onClick={open}>Add</Button>
                                 <Button variant='default' leftIcon={<IconRefresh size='1.125rem' />} onClick={onRefresh}>Refresh</Button>
                             </Button.Group>
 
@@ -107,13 +219,27 @@ export default function TimerDetailPage() {
                                 {details && details.timerItems &&
                                     details.timerItems.map((item) => (
                                         <Accordion.Item value={item.uuid} key={item.uuid}>
-                                            <Accordion.Control>
-                                                <TimerCard uuid={item.uuid} name={item.name}/>
-                                            </Accordion.Control>
+                                            <TimerCard timerItem={item} onStart={onStart} onDelete={onDelete} onStop={onStop}/>
                                             <Accordion.Panel>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                                    <Button variant='filled' color='violet' leftIcon={<IconPlus size='1.125rem' />}>Add</Button>
-                                                </Box>
+                                                {item.moments && 
+                                                    item.moments.map(moment => (
+                                                        <Paper withBorder sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }} px={40} py={15} mb={10}>
+                                                            <Text weight={600} sx={{ marginRight: '1.5rem', flex: 1 }}>{moment.name}</Text>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                                                { moment.end.length > 0 ?
+                                                                    <Badge color='green' variant='filled' leftSection={<IconHourglassFilled size='0.6rem' />}>
+                                                                        {dayjs('1970-01-01 00:00').add(dayjs.duration(dayjs(moment.end).diff(dayjs(moment.start)))).format("HH:mm:ss")}
+                                                                    </Badge>
+                                                                :
+                                                                    <Group>
+                                                                        <Text>Running...</Text>
+                                                                        <Button sx={{ marginLeft: '1.5rem' }} variant='default' leftIcon={<IconPlus size='1.125rem' />} onClick={() => onStop(item)}>Stop</Button>
+                                                                    </Group>
+                                                                }
+                                                            </Box>
+                                                        </Paper>
+                                                    ))
+                                                }
                                             </Accordion.Panel>
                                         </Accordion.Item>
                                     ))

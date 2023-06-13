@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { DefaultProps, Header, ActionIcon, Text } from '@mantine/core'
+import { DefaultProps, Header, ActionIcon, Text, Badge } from '@mantine/core'
 import { IconX, IconMinus, IconSquare  } from '@tabler/icons-react';
 import { useStyles } from './topbar-styles'
 import { useIsClient } from '@/context/is-client-context';
 import { appWindow } from '@tauri-apps/api/window'
+import { useCubeDirection } from '@/context/cube-direction';
+import { listen } from '@tauri-apps/api/event';
 
 export interface TopbarProps extends DefaultProps {
     children?: React.ReactNode
@@ -20,6 +22,12 @@ const Topbar = ({
 
     const { isClient } = useIsClient();
     const { classes } = useStyles();
+    const { direction, axisX, axisY } = useCubeDirection();
+
+    useEffect(() => {
+        const unListen = listen("CONNECTED", (e: { payload: string }) => {});
+        return () => {unListen.then((f) => f());}
+    }, [])
 
     return (
         <>
@@ -31,6 +39,10 @@ const Topbar = ({
                         {children}
                     </div>
                     <div className={classes.actions}>
+                        <Badge variant='filled' sx={{ marginRight: '.5rem'}}>{direction}</Badge>
+                        <Badge variant='filled' sx={{ marginRight: '.5rem'}}>X: {axisX}</Badge>
+                        <Badge variant='filled' sx={{ marginRight: '1.5rem'}}>Y: {axisY}</Badge>
+
                         <ActionIcon onClick={() => appWindow.minimize()} variant='subtle' mx='auto' size='md'>
                             <IconMinus size='.8rem'/>
                         </ActionIcon>

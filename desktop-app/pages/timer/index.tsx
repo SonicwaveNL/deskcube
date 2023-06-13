@@ -60,19 +60,6 @@ export default function TimerPage() {
         })
     }
 
-    const onCreate = () => {
-        createTimer('vanilla')
-        .then(() => onRefresh())
-        .catch(console.error)
-
-        notifications.show({
-            title: `Created 'vanilla'`,
-            message: `Created the 'vanilla' Timer!`,
-            color: 'green',
-            withBorder: true
-        })
-    };
-
     const onRefresh = () => {
         getTimers()
         .then((data) => {
@@ -135,9 +122,6 @@ export default function TimerPage() {
                             <Button.Group mb={20}>
                                 <Button variant='default' onClick={open} leftIcon={<IconPlus size='1.125rem'/>}>
                                     Create
-                                </Button>
-                                <Button variant='default' onClick={onCreate} leftIcon={<IconPlus size='1.125rem'/>}>
-                                    Dummy
                                 </Button>
                                 <Button variant='default' onClick={onRefresh} leftIcon={<IconRefresh size='1.125rem'/>}>
                                     Refresh

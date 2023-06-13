@@ -87,7 +87,8 @@ const AppNavbar = ({
 
     useEffect(() => {
         const unListen = listen("DIRECTIONAL", (e: { payload: string }) => {
-            setDirection(e.payload)
+            setDirection(e.payload);
+            setConnected(true);
         });
         return () => {unListen.then((f) => f());}
     }, [])
@@ -95,6 +96,7 @@ const AppNavbar = ({
     useEffect(() => {
         const unListen = listen("INTERUPT", (e: { payload: string }) => {
             setLoading(false);
+            setConnected(false);
             notifications.update({
                 id: 'start-ble',
                 color: 'red',
@@ -109,6 +111,7 @@ const AppNavbar = ({
     useEffect(() => {
         const unListen = listen("CONNECTED", (e: { payload: string }) => {
             setLoading(false);
+            setConnected(true);
             notifications.update({
                 id: 'start-ble',
                 color: 'teal',
