@@ -206,7 +206,7 @@ export default function TimerDetailPage() {
                             
                             { !uuid && details &&
                                 <Alert icon={<IconAlertCircle size='1rem' />} title='Whoops!' color='red' variant='outline'>
-                                    Your Timer has an invalid 'id', please go back to the 'Timers' page and try again!
+                                    Your Timer has an invalid id, please go back to the Timers page and try again!
                                 </Alert>
                             }
 
@@ -223,7 +223,7 @@ export default function TimerDetailPage() {
                                             <Accordion.Panel>
                                                 {item.moments && 
                                                     item.moments.map(moment => (
-                                                        <Paper withBorder sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }} px={40} py={15} mb={10}>
+                                                        <Paper withBorder sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }} px={40} py={15} mb={10} key={moment.uuid}>
                                                             <Text weight={600} sx={{ marginRight: '1.5rem', flex: 1 }}>{moment.name}</Text>
                                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                                                                 { moment.end.length > 0 ?

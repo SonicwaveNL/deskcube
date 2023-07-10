@@ -11,14 +11,14 @@ import {
 import {
     IconTrashFilled,
 } from '@tabler/icons-react';
-import { RowData } from '@/models/timers-model';
+import { Timer } from '@/models/timers-model';
 import { sortData } from '@/utils/sort-data';
 import { Th } from './th';
 import { useStyles } from './table-styles';
 import Link from 'next/link';
 
 export interface TableProps extends DefaultProps {
-    data: RowData[];
+    data: Timer[];
     onDelete?: (uuid: string, name: string) => any;
 }
 
@@ -28,7 +28,7 @@ export const TimerTable = ({
 }: TableProps) => {
     const [search, setSearch] = useState('');
     const [sortedData, setSortedData] = useState(data);
-    const [sortBy, setSortBy] = useState<keyof RowData | null>(null);
+    const [sortBy, setSortBy] = useState<keyof Timer | null>(null);
     const [reverseSortDirection, setReverseSortDirection] = useState(false);
 
     const { classes } = useStyles();
@@ -37,7 +37,7 @@ export const TimerTable = ({
         setSortedData(data);
     }, [data]);
 
-    const setSorting = (field: keyof RowData) => {
+    const setSorting = (field: keyof Timer) => {
         const reversed = field === sortBy ? !reverseSortDirection : false;
         setReverseSortDirection(reversed);
         setSortBy(field);
@@ -61,11 +61,11 @@ export const TimerTable = ({
                     <Text size='sm' ml='xs'>{row.name}</Text>
                 </Link>
             </td>
-            <td className={classes.itemTime}>
+            {/* <td className={classes.itemTime}>
                 <Group>
                     <Text size='sm' ml='xs'>{row.time ? row.time.toLocaleTimeString() : '00:00:00'}</Text>
                 </Group>
-            </td>
+            </td> */}
             <td className={classes.button}>
                 <ActionIcon variant='filled' color='red' onClick={() => onDelete ? onDelete(row.uuid, row.name) : null}>
                     <IconTrashFilled size='1.125rem'/>
@@ -89,14 +89,13 @@ export const TimerTable = ({
                         <Th
                           sorted={sortBy === 'name'}
                           reversed={reverseSortDirection}
-                          onSort={() => setSorting('name')}
                         >
                             Project
                         </Th>
                         <Th
-                          sorted={sortBy === 'time'}
+                          sorted={sortBy === 'name'}
                           reversed={reverseSortDirection}
-                          onSort={() => setSorting('time')}
+                          onSort={() => setSorting('name')}
                         >
                             Total
                         </Th>

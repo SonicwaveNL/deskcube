@@ -1,4 +1,4 @@
-import { RowData } from '@/models/timers-model';
+import { Timer } from '@/models/timers-model';
 import { filterData } from './filter-data';
 
 export const transformIfNeeded = (data : string | Date | number) => {
@@ -12,8 +12,8 @@ export const transformIfNeeded = (data : string | Date | number) => {
 }
 
 export const sortData = (
-    data: RowData[],
-    payload: { sortBy: keyof RowData | null; reversed: boolean; search: string }
+    data: Timer[],
+    payload: { sortBy: keyof Timer | null; reversed: boolean; search: string }
 ) => {
     const { sortBy } = payload;
 
@@ -25,13 +25,13 @@ export const sortData = (
         [...data].sort((a, b) => {
             
             if (payload.reversed) {
-                let left = transformIfNeeded(b[sortBy]);
-                let right = transformIfNeeded(a[sortBy]);
+                let left = transformIfNeeded(b['name']);
+                let right = transformIfNeeded(a['name']);
                 return left.localeCompare(right);
             }
             
-            let left = transformIfNeeded(a[sortBy]);
-            let right = transformIfNeeded(b[sortBy]);
+            let left = transformIfNeeded(a['name']);
+            let right = transformIfNeeded(b['name']);
             return left.localeCompare(right);
 
         }),

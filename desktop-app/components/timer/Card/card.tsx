@@ -101,7 +101,7 @@ export const TimerCard = ({
                     
                     { direction !== 'LEFT' ? 
                         <Alert icon={<IconAlertCircle size="1rem" />} title="Before starting:" color="cyan" mb={20}>
-                            Cube is on it's <b>{direction}</b> side, tilt the cube on it's <b>LEFT</b> side and press <b>Start</b> to continue.
+                            Cube is on its <b>{direction}</b> side, tilt the cube on its <b>LEFT</b> side and press <b>Start</b> to continue.
                         </Alert>
                     : 
                         <Button type='submit'>Start</Button>
